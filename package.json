@@ -1,0 +1,36 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@tsparticles/react": "^3.0.0",
+    "@tsparticles/slim": "^3.9.1",
+    "autoprefixer": "^10.4.19",
+    "dotenv": "^16.4.5",
+    "firebase": "^12.7.0",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.555.0",
+    "postcss": "^8.4.38",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-force-graph-2d": "^1.29.0",
+    "recharts": "^3.3.0",
+    "tailwindcss": "^3.4.1",
+    "typewriter-effect": "^2.22.0",
+    "use-sound": "^5.0.0",
+    "vercel": "^35.2.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^9.36.0",
+    "vite": "^7.1.7"
+  }
+}
