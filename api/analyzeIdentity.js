@@ -11,7 +11,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
     const prompt = `
     You are a psychological analyst AI. Based on the user's journal history below, create a "Cosmic Identity Profile".

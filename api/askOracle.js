@@ -12,7 +12,7 @@ export default async function handler(request, response) {
 
   try {
     // --- FIX: Changed model to match your working processEntry.js ---
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
     const prompt = `
     You are "The Oracle," a wise, mystical, and highly intelligent AI analyst for a personal journal.
