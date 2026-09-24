@@ -75,8 +75,11 @@ const UserBadge = ({ user }) => {
                       exit={{ opacity: 0, y: -10, height: 0 }}
                       className="mt-2 w-56 bg-gray-950/90 backdrop-blur-2xl border border-blue-500/20 rounded-xl overflow-hidden shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] origin-top-right"
                   >
+                      <button type="button" onClick={() => setExpanded(false)} aria-label="Close account menu" className="absolute right-2 top-2 flex min-h-10 min-w-10 items-center justify-center text-blue-300 hover:text-white">
+                          <X size={18} />
+                      </button>
                       <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 opacity-50" />
-                      <div className="p-4 border-b border-white/5 space-y-2">
+                      <div className="space-y-2 border-b border-white/5 p-4 pr-12">
                           <div className="flex items-center gap-2 text-xs text-blue-200">
                              <ShieldCheck size={14} className="text-emerald-400" />
                              <span>Secure Connection</span>
@@ -147,7 +150,7 @@ const ScannerHUD = ({ data, onClose }) => {
             <motion.div initial={{ top: "-100%" }} animate={{ top: "200%" }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className={`absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-${config.color}-400 to-transparent opacity-50`} />
             <div className={`flex items-center justify-between bg-${config.color}-950/30 p-3 border-b border-${config.color}-500/20`}>
                 <div className="flex items-center gap-2"><config.icon size={16} className={`text-${config.color}-400 animate-pulse`} /><span className={`text-xs font-bold tracking-[0.2em] text-${config.color}-300 font-tech`}>{config.type}</span></div>
-                <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors"><X size={14} /></button>
+                <button type="button" onClick={onClose} aria-label="Close memory signal" className="flex min-h-10 min-w-10 items-center justify-center text-gray-400 transition-colors hover:text-white"><X size={18} /></button>
             </div>
             <div className="p-4 space-y-3">
                 <h3 className="text-lg font-bold text-white uppercase tracking-wider text-shadow-sm">{config.title}</h3>
@@ -211,7 +214,30 @@ const MemoryGalaxy = ({ user }) => {
   useEffect(() => { initParticlesEngine(async (engine) => { await loadSlim(engine); }).then(() => setInit(true)); }, []);
   useEffect(() => { setIsBlackHoleMode(activePanel === 'void'); }, [activePanel]);
 
+    useEffect(() => {
+        const handleEscape = (event) => {
+            if (event.key !== 'Escape') return;
+            document.activeElement?.blur();
+            setActivePanel(null);
+            setSelectedNode(null);
+            setScannerData(null);
+            setNotification(null);
+        };
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, []);
+
   const togglePanel = (panel) => setActivePanel(activePanel === panel ? null : panel);
+
+    const closePanel = () => {
+        document.activeElement?.blur();
+        setActivePanel(null);
+    };
+
+    const closeEntryModal = () => {
+        document.activeElement?.blur();
+        setSelectedNode(null);
+    };
 
   const handleNodeClick = (node) => {
     const foundEntry = entries.find(e => e.id === node.id);
@@ -272,10 +298,10 @@ const MemoryGalaxy = ({ user }) => {
         {!loading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1 }}>
                 {/* Header */}
-                <div className="absolute top-6 left-6 z-50 flex gap-4 items-center">
-                    <h1 className="text-3xl font-bold text-white tracking-widest">Memory Orbit</h1>
+                <div className="absolute top-4 left-4 right-4 z-50 flex flex-col items-start gap-2 md:top-6 md:left-6 md:right-auto md:flex-row md:items-center md:gap-4">
+                    <h1 className="text-lg font-bold text-white tracking-widest md:text-3xl">Memory Orbit</h1>
                     {!isBlackHoleMode && (
-                        <input type="text" placeholder="Scan..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-48 bg-blue-950/30 border border-blue-500/20 rounded-full py-1 px-4 text-blue-100 focus:outline-none focus:border-blue-400/50 transition-all backdrop-blur-sm" />
+                        <input type="text" placeholder="Scan..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-40 bg-blue-950/30 border border-blue-500/20 rounded-full py-2 px-4 text-sm text-blue-100 focus:outline-none focus:border-blue-400/50 transition-all backdrop-blur-sm md:w-48 md:py-1" />
                     )}
                 </div>
 
@@ -283,18 +309,19 @@ const MemoryGalaxy = ({ user }) => {
 
                 <AnimatePresence>
                     {notification && !isBlackHoleMode && (
-                        <motion.div initial={{ opacity: 0, y: -20, x: "-50%" }} animate={{ opacity: 1, y: 0, x: "-50%" }} exit={{ opacity: 0, y: -20, x: "-50%" }} className="absolute top-24 left-1/2 z-50 flex items-start gap-4 px-6 py-4 bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl w-full max-w-2xl whitespace-normal cursor-pointer hover:bg-black/30 transition-colors" onClick={() => setNotification(null)}>
+                        <motion.div initial={{ opacity: 0, y: -20, x: "-50%" }} animate={{ opacity: 1, y: 0, x: "-50%" }} exit={{ opacity: 0, y: -20, x: "-50%" }} className="absolute top-24 left-1/2 z-50 flex w-[calc(100%-1rem)] max-w-2xl cursor-pointer items-start gap-4 whitespace-normal rounded-2xl border border-white/10 bg-black/20 px-4 py-4 shadow-xl backdrop-blur-md transition-colors hover:bg-black/30 md:w-full md:px-6" onClick={() => setNotification(null)}>
                             <span className="text-xl animate-pulse text-blue-300">📡</span>
                             <div className="flex flex-col text-left">
                                 <span className="text-[10px] font-bold text-blue-400/80 uppercase tracking-widest mb-1 font-tech">Signal Received • {notification.date}</span>
                                 <p className="text-sm text-blue-100/90 leading-relaxed font-light">"{notification.message}"</p>
                             </div>
+                            <button type="button" onClick={(event) => { event.stopPropagation(); setNotification(null); }} aria-label="Close signal notification" className="ml-auto flex min-h-10 min-w-10 shrink-0 items-center justify-center text-blue-300 hover:text-white"><X size={18} /></button>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
                 <AnimatePresence>
-                    {scannerData && !isBlackHoleMode && <ScannerHUD data={scannerData} onClose={() => setScannerData(null)} />}
+                    {scannerData && !isBlackHoleMode && <ScannerHUD data={scannerData} onClose={() => { document.activeElement?.blur(); setScannerData(null); }} />}
                 </AnimatePresence>
 
                 <CommandDock activePanel={activePanel} togglePanel={togglePanel} isBlackHoleMode={isBlackHoleMode} />
@@ -302,7 +329,7 @@ const MemoryGalaxy = ({ user }) => {
         )}
 
         <AnimatePresence mode="wait">
-            {activePanel === 'log' && <motion.div key="log" initial={{ x: 300 }} animate={{ x: 0 }} exit={{ x: 300 }} className="absolute inset-0 pointer-events-none z-40"><Suspense fallback={<PanelLoader />}><StarLog entries={entries} searchTerm={searchTerm} onNodeClick={handleNodeClick} onClose={() => setActivePanel(null)}/></Suspense></motion.div>}
+                    {activePanel === 'log' && <motion.div key="log" initial={{ x: 300 }} animate={{ x: 0 }} exit={{ x: 300 }} className="absolute inset-0 pointer-events-none z-40"><Suspense fallback={<PanelLoader />}><StarLog entries={entries} searchTerm={searchTerm} onNodeClick={handleNodeClick} onClose={closePanel}/></Suspense></motion.div>}
             
             {activePanel === 'journal' && !isBlackHoleMode && (
                 <motion.div 
@@ -310,21 +337,21 @@ const MemoryGalaxy = ({ user }) => {
                     initial={{ y: 200, opacity: 0, x: "-50%" }} 
                     animate={{ y: 0, opacity: 1, x: "-50%" }} 
                     exit={{ y: 200, opacity: 0, x: "-50%" }} 
-                    className="absolute bottom-32 left-1/2 w-full max-w-lg z-50"
+                    className="absolute bottom-0 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 pb-[env(safe-area-inset-bottom)] md:bottom-32 md:pb-0"
                 >
-                    <div className="bg-gray-900/60 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-6 relative shadow-2xl">
-                        <Journal user={user} />
+                    <div className="mobile-scroll max-h-[calc(100dvh-4.5rem)] overflow-y-auto rounded-t-3xl border border-blue-500/30 bg-gray-900/95 p-4 shadow-2xl backdrop-blur-xl md:max-h-none md:rounded-3xl md:bg-gray-900/60 md:p-6">
+                        <Journal user={user} onClose={closePanel} />
                     </div>
                 </motion.div>
             )}
 
-            {activePanel === 'identity' && !isBlackHoleMode && <motion.div key="identity" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"><div className="pointer-events-auto w-full max-w-4xl h-[80vh]"><Suspense fallback={<PanelLoader />}><IdentityPanel user={user} entries={entries} /></Suspense></div></motion.div>}
-            {activePanel === 'discover' && !isBlackHoleMode && <motion.div key="discover" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"><div className="pointer-events-auto w-full max-w-5xl h-[85vh]"><Suspense fallback={<PanelLoader />}><MoodExplorer entries={entries} /></Suspense></div></motion.div>}
-            {activePanel === 'vitals' && !isBlackHoleMode && <motion.div key="vitals" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"><div className="pointer-events-auto w-full max-w-4xl p-4"><Suspense fallback={<PanelLoader />}><SentimentPanel entries={entries} /></Suspense></div></motion.div>}
-            {activePanel === 'oracle' && !isBlackHoleMode && <motion.div key="oracle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"><div className="pointer-events-auto w-full max-w-2xl"><Suspense fallback={<PanelLoader />}><OraclePanel entries={entries} /></Suspense></div></motion.div>}
+            {activePanel === 'identity' && !isBlackHoleMode && <motion.div key="identity" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute inset-0 z-40 flex items-end justify-center pointer-events-none md:items-center"><div className="pointer-events-auto h-[calc(100dvh-4.5rem)] w-full max-w-4xl md:h-[80vh]"><Suspense fallback={<PanelLoader />}><IdentityPanel user={user} entries={entries} onClose={closePanel} /></Suspense></div></motion.div>}
+            {activePanel === 'discover' && !isBlackHoleMode && <motion.div key="discover" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="absolute inset-0 z-40 flex items-end justify-center pointer-events-none md:items-center"><div className="pointer-events-auto h-[calc(100dvh-4.5rem)] w-full max-w-5xl md:h-[85vh]"><Suspense fallback={<PanelLoader />}><MoodExplorer entries={entries} onClose={closePanel} /></Suspense></div></motion.div>}
+            {activePanel === 'vitals' && !isBlackHoleMode && <motion.div key="vitals" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 1, x: 50 }} className="absolute inset-0 z-40 flex items-end justify-center pointer-events-none md:items-center"><div className="pointer-events-auto w-full max-w-4xl p-2 md:p-4"><Suspense fallback={<PanelLoader />}><SentimentPanel entries={entries} onClose={closePanel} /></Suspense></div></motion.div>}
+            {activePanel === 'oracle' && !isBlackHoleMode && <motion.div key="oracle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40 flex items-end justify-center pointer-events-none md:items-center"><div className="pointer-events-auto h-[calc(100dvh-4.5rem)] w-full max-w-2xl"><Suspense fallback={<PanelLoader />}><OraclePanel entries={entries} onClose={closePanel} /></Suspense></div></motion.div>}
         </AnimatePresence>
 
-        {selectedNode && <EntryModal entry={selectedNode} onClose={() => setSelectedNode(null)} user={user} />}
+        {selectedNode && <EntryModal entry={selectedNode} onClose={closeEntryModal} user={user} />}
     </div>
   );
 };

@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 
 const TheVoid = ({ onClose }) => {
   const [text, setText] = useState('');
   const [isVenting, setIsVenting] = useState(false);
 
+  const handleClose = () => {
+    document.activeElement?.blur();
+    onClose();
+  };
+
   const handleVent = () => {
     if (!text.trim()) return;
     
     setIsVenting(true); // Trigger the "Suck" animation
+    document.activeElement?.blur();
     
     // Wait for animation to finish, then close
     setTimeout(() => {
@@ -16,7 +23,10 @@ const TheVoid = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black animate-fade-in overflow-hidden">
+     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black animate-fade-in">
+       <button type="button" onClick={handleClose} aria-label="Close The Void" className="absolute right-3 top-3 z-[110] flex min-h-12 min-w-12 items-center justify-center rounded-full border border-red-900/50 bg-black/60 text-red-300 hover:text-white">
+         <X size={22} />
+       </button>
        
        {/* --- BACKGROUND STARS --- */}
        <div className="absolute inset-0 opacity-50">
@@ -26,7 +36,7 @@ const TheVoid = ({ onClose }) => {
        </div>
 
        {/* --- THE SUPERMASSIVE BLACK HOLE --- */}
-       <div className={`relative flex items-center justify-center transition-transform duration-[2000ms] ease-in-out ${isVenting ? 'scale-[5] rotate-180' : 'scale-100'}`}>
+      <div className={`relative flex h-[min(78vw,500px)] w-[min(78vw,500px)] items-center justify-center transition-transform duration-[2000ms] ease-in-out ${isVenting ? 'scale-[5] rotate-180' : 'scale-100'}`}>
             
             {/* 1. Outer Glow (Lensing Effect) */}
             <div className="absolute w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[100px] animate-pulse"></div>
@@ -48,27 +58,27 @@ const TheVoid = ({ onClose }) => {
        {/* --- THE UI LAYER --- */}
        <div className={`absolute z-50 flex flex-col items-center gap-6 transition-all duration-[1500ms] ease-in-out ${isVenting ? 'scale-0 opacity-0 translate-y-[200px] blur-xl' : 'scale-100 opacity-100'}`}>
            
-           <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-red-500 to-black tracking-[0.5em] uppercase drop-shadow-glow">The Void</h2>
+           <h2 className="text-2xl font-bold uppercase tracking-[0.35em] text-transparent bg-gradient-to-b from-red-500 to-black bg-clip-text drop-shadow-glow md:text-4xl md:tracking-[0.5em]">The Void</h2>
            
-           <div className="w-[500px] bg-black/40 backdrop-blur-md border border-red-900/30 p-6 rounded-2xl shadow-2xl">
+           <div className="w-[calc(100vw-2rem)] max-w-[500px] rounded-2xl border border-red-900/30 bg-black/40 p-4 shadow-2xl backdrop-blur-md md:p-6">
                <textarea 
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="Type the thought you wish to destroy..."
-                  className="w-full h-32 bg-transparent border-b border-red-900/30 p-4 text-red-100 text-lg focus:outline-none focus:border-red-500 transition-all resize-none placeholder-red-900/50 text-center font-mono"
+                  className="h-32 w-full resize-none border-b border-red-900/30 bg-transparent p-4 text-center text-base text-red-100 transition-all placeholder-red-900/50 focus:border-red-500 focus:outline-none font-mono md:text-lg"
                />
            </div>
            
-           <div className="flex gap-4">
+           <div className="flex w-full flex-col gap-2 px-4 sm:w-auto sm:flex-row sm:gap-4 sm:px-0">
                 <button 
-                    onClick={onClose}
-                    className="px-8 py-3 text-red-500/40 hover:text-red-400 font-bold uppercase tracking-widest text-xs hover:scale-105 transition-all"
+                    onClick={handleClose}
+                    className="min-h-12 px-8 py-3 text-xs font-bold uppercase tracking-widest text-red-500/40 transition-all hover:scale-105 hover:text-red-400"
                 >
                     Retreat
                 </button>
                 <button 
                     onClick={handleVent}
-                    className="bg-red-600 hover:bg-red-500 text-white font-bold py-4 px-10 rounded-full shadow-[0_0_50px_rgba(220,38,38,0.4)] hover:shadow-[0_0_80px_rgba(220,38,38,0.6)] uppercase tracking-widest text-xs transition-all hover:scale-110 active:scale-95"
+                    className="min-h-12 rounded-full bg-red-600 px-10 py-4 text-xs font-bold uppercase tracking-widest text-white shadow-[0_0_50px_rgba(220,38,38,0.4)] transition-all hover:scale-110 hover:bg-red-500 hover:shadow-[0_0_80px_rgba(220,38,38,0.6)] active:scale-95"
                 >
                     Cast into Void
                 </button>
