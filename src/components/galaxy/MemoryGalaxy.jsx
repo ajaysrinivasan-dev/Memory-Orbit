@@ -273,7 +273,7 @@ const MemoryGalaxy = ({ user }) => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1 }}>
                 {/* Header */}
                 <div className="absolute top-6 left-6 z-50 flex gap-4 items-center">
-                    <h1 className="text-3xl font-bold text-white tracking-widest">PastMe</h1>
+                    <h1 className="text-3xl font-bold text-white tracking-widest">Memory Orbit</h1>
                     {!isBlackHoleMode && (
                         <input type="text" placeholder="Scan..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-48 bg-blue-950/30 border border-blue-500/20 rounded-full py-1 px-4 text-blue-100 focus:outline-none focus:border-blue-400/50 transition-all backdrop-blur-sm" />
                     )}

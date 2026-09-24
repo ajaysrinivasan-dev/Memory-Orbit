@@ -46,7 +46,7 @@ function Login() {
       <div className="w-full max-w-md p-8 bg-gray-900/60 backdrop-blur-xl border border-blue-500/30 rounded-2xl shadow-2xl shadow-blue-900/20">
         
         <h1 className="text-4xl font-bold text-center mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 tracking-tighter">
-          PastMe
+          Memory Orbit
         </h1>
         <p className="text-center text-blue-200/60 mb-8 text-sm tracking-widest uppercase">
           Initialize Neural Link
@@ -74,7 +74,7 @@ function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@pastme.ai"
+              placeholder="user@memory-orbit.ai"
               className="w-full px-4 py-3 bg-gray-800/50 border border-blue-500/30 rounded-lg text-blue-100 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 placeholder-blue-500/30 transition-all"
               required
             />

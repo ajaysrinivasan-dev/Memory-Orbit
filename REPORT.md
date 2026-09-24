@@ -1,17 +1,17 @@
-# REPORT: PastMe — AI Journal
+# REPORT: Memory Orbit — AI Journal
 
 ## ACKNOWLEDGEMENT
-This report documents the PastMe project — a reactive, web-based AI-assisted journaling application. It summarizes objectives, design, implementation details, testing, and maintenance guidance based on the current codebase.
+This report documents the Memory Orbit project — a reactive, web-based AI-assisted journaling application. It summarizes objectives, design, implementation details, testing, and maintenance guidance based on the current codebase.
 
 ## ABSTRACT
-PastMe is a frontend-focused React application that integrates with Firebase for persistence and serverless endpoints for AI processing. The app provides a "LOG ENTRY" UI that accepts typed and speech-captured input, sends entries to a backend AI processing endpoint, and stores enriched metadata (emotion, summary, keywords) alongside raw content in Firestore.
+Memory Orbit is a frontend-focused React application that integrates with Firebase for persistence and serverless endpoints for AI processing. The app provides a "LOG ENTRY" UI that accepts typed and speech-captured input, sends entries to a backend AI processing endpoint, and stores enriched metadata (emotion, summary, keywords) alongside raw content in Firestore.
 
 ---
 
 ## Chapter I: Introduction
 
 ### 1.1 An Overview
-PastMe is a single-page React application built with Vite. The UI follows a sci-fi aesthetic and is implemented using React components under src/. Key features:
+Memory Orbit is a single-page React application built with Vite. The UI follows a sci-fi aesthetic and is implemented using React components under src/. Key features:
 - Text journal entry input with visual effects and custom styling.
 - Optional speech-to-text capture using the browser SpeechRecognition API.
 - AI enrichment of entries via serverless endpoints (see /api/*).
@@ -131,7 +131,7 @@ Deployment notes:
 ---
 
 ## Chapter V: Conclusion
-PastMe provides a tightly focused journaling experience with AI augmentation and cloud persistence. The current codebase demonstrates a pragmatic and robust approach to handling both typed and speech input plus resilient AI response parsing.
+Memory Orbit provides a tightly focused journaling experience with AI augmentation and cloud persistence. The current codebase demonstrates a pragmatic and robust approach to handling both typed and speech input plus resilient AI response parsing.
 
 ### Scope of Future Development
 - UI for browsing and searching past entries
