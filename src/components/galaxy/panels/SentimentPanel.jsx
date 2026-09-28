@@ -9,6 +9,9 @@ const SentimentPanel = ({ entries }) => {
     })).reverse(); 
   };
   const sentimentData = getSentimentData();
+  const liveDataKey = entries.map((entry) => (
+    `${entry.id}:${entry.sentiment ?? ''}:${entry.updatedAt?.seconds ?? ''}:${entry.updatedAt?.nanoseconds ?? ''}`
+  )).join('|');
   
   const gradientOffset = () => {
     if (sentimentData.length === 0) return 0.5;
@@ -25,7 +28,7 @@ const SentimentPanel = ({ entries }) => {
             <h3 className="text-green-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-2">Emotional Resonance</h3>
             <div className="h-32 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={sentimentData}>
+                    <AreaChart key={liveDataKey} data={sentimentData}>
                         <defs>
                             <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset={off} stopColor="#4ade80" stopOpacity={0.6} />
