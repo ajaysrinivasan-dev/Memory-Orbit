@@ -1,9 +1,13 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
+import { authenticateRequest, getErrorStatus } from "./_lib/auth.js";
+import { generateGeminiContent } from "./_lib/gemini.js";
 
 export default async function handler(request, response) {
+  try {
+    await authenticateRequest(request);
+  } catch (error) {
+    return response.status(getErrorStatus(error)).json({ error: error.status === 401 ? "Unauthorized" : error.message });
+  }
+
   const { context } = request.body;
 
   if (!context) {
@@ -11,8 +15,6 @@ export default async function handler(request, response) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
-
     const prompt = `
     You are a psychological analyst AI. Based on the user's journal history below, create a "Cosmic Identity Profile".
     
@@ -32,9 +34,7 @@ export default async function handler(request, response) {
     }
     `;
 
-    const result = await model.generateContent(prompt);
-    const aiResponse = await result.response;
-    let text = aiResponse.text();
+    let text = await generateGeminiContent(prompt);
 
     // --- JSON CLEANING (The Fix) ---
     // 1. Remove markdown code blocks
@@ -54,6 +54,6 @@ export default async function handler(request, response) {
   } catch (e) {
     console.error("Identity Error:", e);
     // Send the actual error message back
-    return response.status(500).json({ error: e.message });
+    return response.status(getErrorStatus(e, 502)).json({ error: e.message });
   }
 }

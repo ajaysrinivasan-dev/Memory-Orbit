@@ -1,3 +1,5 @@
+import { auth } from '../firebase';
+
 /**
  * API Caching & Rate Limiting Utility
  * Prevents duplicate API calls and enforces rate limiting
@@ -5,6 +7,7 @@
 
 const cache = new Map();
 const requestQueues = new Map();
+const endpointQueues = new Map();
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const RATE_LIMIT_DELAY = 1000; // 1 second between calls to same endpoint
@@ -67,8 +70,25 @@ export const rateLimitedFetch = async (endpoint, options = {}) => {
 
   // Create new request promise
   const requestPromise = (async () => {
+    const previousRequest = endpointQueues.get(endpoint) || Promise.resolve();
+    let releaseRequest;
+    const currentRequest = new Promise((resolve) => { releaseRequest = resolve; });
+    endpointQueues.set(endpoint, currentRequest);
+
     try {
-      const response = await fetch(endpoint, options);
+      await previousRequest;
+      const lastRequestAt = endpointQueues.get(`${endpoint}:lastRequestAt`) || 0;
+      const waitTime = Math.max(0, RATE_LIMIT_DELAY - (Date.now() - lastRequestAt));
+      if (waitTime > 0) await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+      const user = auth.currentUser;
+      if (!user) throw new Error('User is not authenticated.');
+      const token = await user.getIdToken();
+      const headers = new Headers(options.headers || {});
+      headers.set('Authorization', `Bearer ${token}`);
+      endpointQueues.set(`${endpoint}:lastRequestAt`, Date.now());
+
+      const response = await fetch(endpoint, { ...options, headers });
       
       if (!response.ok) {
         throw new Error(`API Error: ${response.status}`);
@@ -78,10 +98,12 @@ export const rateLimitedFetch = async (endpoint, options = {}) => {
       setCachedResult(cacheKey, data);
       return data;
     } finally {
+      releaseRequest();
       // Clean up queue after request completes
       setTimeout(() => {
         requestQueues.delete(cacheKey);
       }, RATE_LIMIT_DELAY);
+      if (endpointQueues.get(endpoint) === currentRequest) endpointQueues.delete(endpoint);
     }
   })();
 

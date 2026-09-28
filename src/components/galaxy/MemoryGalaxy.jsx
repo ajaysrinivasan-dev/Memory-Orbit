@@ -132,33 +132,40 @@ const IntroSequence = ({ onComplete }) => {
     );
 };
 
+const scannerThemes = {
+    gray: { panelBorder: "border-gray-500/30", scan: "via-gray-400", header: "bg-gray-950/30", headerBorder: "border-gray-500/20", icon: "text-gray-400", type: "text-gray-300", dot: "bg-gray-500" },
+    blue: { panelBorder: "border-blue-500/30", scan: "via-blue-400", header: "bg-blue-950/30", headerBorder: "border-blue-500/20", icon: "text-blue-400", type: "text-blue-300", dot: "bg-blue-500" },
+    pink: { panelBorder: "border-pink-500/30", scan: "via-pink-400", header: "bg-pink-950/30", headerBorder: "border-pink-500/20", icon: "text-pink-400", type: "text-pink-300", dot: "bg-pink-500" },
+    purple: { panelBorder: "border-purple-500/30", scan: "via-purple-400", header: "bg-purple-950/30", headerBorder: "border-purple-500/20", icon: "text-purple-400", type: "text-purple-300", dot: "bg-purple-500" },
+};
+
 // --- COMPONENT: SCANNER HUD ---
 const ScannerHUD = ({ data, onClose }) => {
     if (!data) return null;
-    let config = { title: "UNKNOWN SIGNAL", type: "ANOMALY", desc: "Unable to parse data signature.", color: "gray", icon: Scan };
+    let config = { title: "UNKNOWN SIGNAL", type: "ANOMALY", desc: "Unable to parse data signature.", theme: scannerThemes.gray, icon: Scan };
 
     if (data.group === 'entry') {
-        config = { title: "MEMORY LOG", type: "CHRONICLE DATA", desc: `Encrypted journal entry from ${data.name || 'Unknown Date'}. Contains personal reflection data.`, color: "blue", icon: FileText };
+        config = { title: "MEMORY LOG", type: "CHRONICLE DATA", desc: `Encrypted journal entry from ${data.name || 'Unknown Date'}. Contains personal reflection data.`, theme: scannerThemes.blue, icon: FileText };
     } else if (data.group === 'emotion') {
-        config = { title: "EMOTIONAL CORE", type: "PSIONIC SIGNATURE", desc: `A cluster of memories bound by the feeling of "${(data.name || 'Unknown').toUpperCase()}". High resonance detected.`, color: "pink", icon: Activity };
+        config = { title: "EMOTIONAL CORE", type: "PSIONIC SIGNATURE", desc: `A cluster of memories bound by the feeling of "${(data.name || 'Unknown').toUpperCase()}". High resonance detected.`, theme: scannerThemes.pink, icon: Activity };
     } else if (data.group === 'keyword') {
-        config = { title: "NEURAL LINK", type: "SEMANTIC TAG", desc: `Recurring concept: "${(data.name || 'Unknown').toUpperCase()}". Connected to multiple timeline entries.`, color: "purple", icon: Database };
+        config = { title: "NEURAL LINK", type: "SEMANTIC TAG", desc: `Recurring concept: "${(data.name || 'Unknown').toUpperCase()}". Connected to multiple timeline entries.`, theme: scannerThemes.purple, icon: Database };
     }
 
     return (
-        <motion.div initial={{ opacity: 0, x: 50, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 50, scale: 0.9 }} className={`absolute bottom-24 right-6 z-50 w-80 overflow-hidden rounded-xl border border-${config.color}-500/30 bg-black/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
-            <motion.div initial={{ top: "-100%" }} animate={{ top: "200%" }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className={`absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-${config.color}-400 to-transparent opacity-50`} />
-            <div className={`flex items-center justify-between bg-${config.color}-950/30 p-3 border-b border-${config.color}-500/20`}>
-                <div className="flex items-center gap-2"><config.icon size={16} className={`text-${config.color}-400 animate-pulse`} /><span className={`text-xs font-bold tracking-[0.2em] text-${config.color}-300 font-tech`}>{config.type}</span></div>
+        <motion.div initial={{ opacity: 0, x: 50, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 50, scale: 0.9 }} className={`absolute bottom-24 right-6 z-50 w-80 overflow-hidden rounded-xl border ${config.theme.panelBorder} bg-black/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
+            <motion.div initial={{ top: "-100%" }} animate={{ top: "200%" }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className={`absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent ${config.theme.scan} to-transparent opacity-50`} />
+            <div className={`flex items-center justify-between ${config.theme.header} p-3 border-b ${config.theme.headerBorder}`}>
+                <div className="flex items-center gap-2"><config.icon size={16} className={`${config.theme.icon} animate-pulse`} /><span className={`text-xs font-bold tracking-[0.2em] ${config.theme.type} font-tech`}>{config.type}</span></div>
                 <button type="button" onClick={onClose} aria-label="Close memory signal" className="flex min-h-10 min-w-10 items-center justify-center text-gray-400 transition-colors hover:text-white"><X size={18} /></button>
             </div>
             <div className="p-4 space-y-3">
                 <h3 className="text-lg font-bold text-white uppercase tracking-wider text-shadow-sm">{config.title}</h3>
                 <div className="h-px w-full bg-gradient-to-r from-white/20 to-transparent" />
-                <p className="text-sm text-gray-300 font-tech leading-relaxed"><span className={`text-${config.color}-400`}>{">"}</span> {config.desc}</p>
+                <p className="text-sm text-gray-300 font-tech leading-relaxed"><span className={config.theme.icon}>{">"}</span> {config.desc}</p>
                 <div className="flex justify-between items-end mt-2 opacity-50">
                     <span className="text-[10px] text-gray-500 font-tech">ID: {data.id?.substring(0,8).toUpperCase()}...</span>
-                    <div className="flex gap-1"><div className={`w-1 h-1 rounded-full bg-${config.color}-500`} /><div className={`w-1 h-1 rounded-full bg-${config.color}-500 animate-bounce`} style={{ animationDelay: '0.1s'}} /><div className={`w-1 h-1 rounded-full bg-${config.color}-500 animate-bounce`} style={{ animationDelay: '0.2s'}} /></div>
+                    <div className="flex gap-1"><div className={`w-1 h-1 rounded-full ${config.theme.dot}`} /><div className={`w-1 h-1 rounded-full ${config.theme.dot} animate-bounce`} style={{ animationDelay: '0.1s'}} /><div className={`w-1 h-1 rounded-full ${config.theme.dot} animate-bounce`} style={{ animationDelay: '0.2s'}} /></div>
                 </div>
             </div>
         </motion.div>
@@ -276,7 +283,7 @@ const MemoryGalaxy = ({ user }) => {
             {loading && <IntroSequence onComplete={() => setLoading(false)} />}
         </AnimatePresence>
 
-        {init && <Particles id="tsparticles" options={particlesOptions} className="absolute inset-0 -z-20" />}
+        {init && <Particles id="memory-galaxy-particles" options={particlesOptions} className="absolute inset-0 -z-20" />}
 
         <AnimatePresence>
             {isBlackHoleMode && (

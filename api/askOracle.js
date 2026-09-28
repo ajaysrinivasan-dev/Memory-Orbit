@@ -1,9 +1,13 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
+import { authenticateRequest, getErrorStatus } from "./_lib/auth.js";
+import { generateGeminiContent } from "./_lib/gemini.js";
 
 export default async function handler(request, response) {
+  try {
+    await authenticateRequest(request);
+  } catch (error) {
+    return response.status(getErrorStatus(error)).json({ error: error.status === 401 ? "Unauthorized" : error.message });
+  }
+
   const { question, context } = request.body;
 
   if (!question || !context) {
@@ -11,9 +15,6 @@ export default async function handler(request, response) {
   }
 
   try {
-    // --- FIX: Changed model to match your working processEntry.js ---
-    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
-
     const prompt = `
     You are "The Oracle," a wise, mystical, and highly intelligent AI analyst for a personal journal.
     
@@ -32,14 +33,12 @@ export default async function handler(request, response) {
     5. Keep the tone mystical but helpful.
     `;
 
-    const result = await model.generateContent(prompt);
-    const aiResponse = await result.response;
-    const answer = aiResponse.text().trim();
+    const answer = (await generateGeminiContent(prompt)).trim();
 
     return response.status(200).json({ answer });
 
   } catch (e) {
     console.error("Oracle Error:", e);
-    return response.status(500).json({ error: e.message });
+    return response.status(getErrorStatus(e, 502)).json({ error: e.message });
   }
 }

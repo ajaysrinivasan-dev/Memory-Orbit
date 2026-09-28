@@ -1,18 +1,38 @@
-import { config } from 'dotenv';
-config();
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
+import { authenticateRequest, getErrorStatus } from "./_lib/auth.js";
+import { generateGeminiContent } from "./_lib/gemini.js";
 
 // --- Our list of standard emotions ---
 const emotionList = [
   'Happy', 'Joyful', 'Grateful', 'Confident', 'Productive', // Positive
   'Sad', 'Anxious', 'Stressed', 'Angry', 'Tired',     // Negative
   'Calm', 'Reflective', 'Neutral'                     // Neutral
-].join(', ');
+];
+
+const parseJsonResponse = (text) => {
+  const cleaned = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
+  return JSON.parse(cleaned);
+};
+
+const isValidResult = (result) => (
+  result &&
+  emotionList.includes(result.emotion) &&
+  typeof result.summary === "string" &&
+  typeof result.reply === "string" &&
+  Array.isArray(result.keywords) &&
+  result.keywords.every((keyword) => typeof keyword === "string") &&
+  typeof result.sentiment_score === "number" &&
+  Number.isFinite(result.sentiment_score) &&
+  result.sentiment_score >= -1 &&
+  result.sentiment_score <= 1
+);
 
 export default async function handler(request, response) {
+  try {
+    await authenticateRequest(request);
+  } catch (error) {
+    return response.status(getErrorStatus(error)).json({ error: error.status === 401 ? "Unauthorized" : error.message });
+  }
+
   const { text } = request.body;
 
   if (!text) {
@@ -22,8 +42,6 @@ export default async function handler(request, response) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
-    
     // --- PROMPT UPDATED FOR DEEPER PERSONALITY ---
     const prompt = `
       Analyze the following journal entry as a deeply empathetic and intelligent AI companion. 
@@ -42,19 +60,18 @@ export default async function handler(request, response) {
       `;
     // --- END OF UPDATE ---
 
-    const result = await model.generateContent(prompt);
-    const aiResponse = await result.response;
-    
-    const aiJsonString = aiResponse.text()
-      .trim()
-      .replace(/^```json\n/, "")
-      .replace(/\n```$/, "");
+    const aiJsonString = await generateGeminiContent(prompt);
+    const validatedResult = parseJsonResponse(aiJsonString);
 
-    return response.status(200).json({ reply: aiJsonString });
+    if (!isValidResult(validatedResult)) {
+      return response.status(502).json({ error: "Gemini returned an invalid analysis response." });
+    }
+
+    return response.status(200).json({ reply: JSON.stringify(validatedResult) });
 
   } catch (e) {
     console.error("An error occurred:", e);
-    return response.status(500).json({
+    return response.status(getErrorStatus(e, 502)).json({
       error: `An error occurred: ${e.message}`,
     });
   }

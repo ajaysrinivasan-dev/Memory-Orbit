@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { rateLimitedFetch } from '../../../utils/apiCache';
 
 const IdentityPanel = ({ onClose, entries }) => {
     const [identityData, setIdentityData] = useState(null);
@@ -14,12 +15,10 @@ const IdentityPanel = ({ onClose, entries }) => {
             }
             const contextData = entries.slice(0, 30).map(e => `${e.emotion}: ${e.summary}`).join('\n');
             try {
-               const response = await fetch('/api/analyzeIdentity', {
+                             const data = await rateLimitedFetch('/api/analyzeIdentity', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ context: contextData }),
               });
-              const data = await response.json();
-              if (!response.ok) throw new Error(data.error || "Server Error");
               setIdentityData(data);
             } catch (err) { 
                 console.error("Frontend Error:", err); 

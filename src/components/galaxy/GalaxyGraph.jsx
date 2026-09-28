@@ -1,17 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { loadSlim } from "@tsparticles/slim";
 
 const GalaxyGraph = ({ entries, searchTerm, onNodeClick }) => {
-  const [init, setInit] = useState(false);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [dimensions, setDimensions] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [hoverNode, setHoverNode] = useState(null);
-
-  useEffect(() => {
-    initParticlesEngine(async (engine) => { await loadSlim(engine); }).then(() => setInit(true));
-  }, []);
 
   useEffect(() => {
     const handleResize = () => setDimensions({ w: window.innerWidth, h: window.innerHeight });
@@ -62,18 +55,6 @@ const GalaxyGraph = ({ entries, searchTerm, onNodeClick }) => {
     setGraphData({ nodes, links });
   }, [entries]);
 
-  const particlesOptions = useMemo(() => ({
-    background: { color: { value: "transparent" } }, 
-    fpsLimit: 60,
-    particles: {
-      color: { value: "#ffffff" }, links: { enable: false }, 
-      move: { enable: true, speed: 0.2, direction: "none", random: true, outModes: "out" },
-      number: { value: 160, density: { enable: true, area: 800 } },
-      opacity: { value: { min: 0.1, max: 0.5 }, animation: { enable: true, speed: 1, minimumValue: 0.1 } },
-      size: { value: { min: 1, max: 3 } },
-    },
-  }), []);
-
   const isNeighbor = (node1, node2) => {
     return graphData.links.some(link => 
         (link.source.id === node1.id && link.target.id === node2.id) ||
@@ -83,8 +64,6 @@ const GalaxyGraph = ({ entries, searchTerm, onNodeClick }) => {
 
   return (
     <div className="absolute inset-0 z-0">
-        {init && <Particles id="tsparticles" options={particlesOptions} className="absolute inset-0 -z-20" />}
-        
         <ForceGraph2D
             width={dimensions.w} height={dimensions.h} 
             graphData={graphData} 
