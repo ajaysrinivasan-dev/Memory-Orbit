@@ -29,6 +29,9 @@
     "use-sound": "^5.0.0",
     "vercel": "^35.2.1"
   },
+  "overrides": {
+    "jose": "4.15.9"
+  },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.4",
     "eslint": "^9.36.0",
