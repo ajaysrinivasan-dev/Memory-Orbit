@@ -22,7 +22,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
     
     // --- PROMPT UPDATED FOR DEEPER PERSONALITY ---
     const prompt = `
