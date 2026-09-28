@@ -1,6 +1,3 @@
-import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-
 class AuthenticationError extends Error {
   constructor(message = "Unauthorized") {
     super(message);
@@ -8,26 +5,8 @@ class AuthenticationError extends Error {
   }
 }
 
-const getFirebaseAdminAuth = () => {
-  if (getApps().length > 0) {
-    return getAuth();
-  }
-
-  const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = process.env;
-  if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
-    throw new Error("Missing Firebase Admin server credentials.");
-  }
-
-  const app = initializeApp({
-    credential: cert({
-      projectId: FIREBASE_PROJECT_ID,
-      clientEmail: FIREBASE_CLIENT_EMAIL,
-      privateKey: FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-    }),
-  });
-
-  return getAuth(app);
-};
+const FIREBASE_WEB_API_KEY = "AIzaSyBaoN5G5ERVDk15vSWfYWx5uBUJTFijIRQ";
+const LOOKUP_URL = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`;
 
 export const authenticateRequest = async (request) => {
   const authorization = request.headers.authorization || "";
@@ -38,12 +17,33 @@ export const authenticateRequest = async (request) => {
   }
 
   try {
-    return await getFirebaseAdminAuth().verifyIdToken(match[1]);
+    const lookupResponse = await fetch(LOOKUP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken: match[1] }),
+    });
+
+    const data = await lookupResponse.json().catch(() => ({}));
+    const user = Array.isArray(data.users) ? data.users[0] : null;
+
+    if (!lookupResponse.ok || !user?.localId || user.disabled) {
+      throw new AuthenticationError();
+    }
+
+    return {
+      uid: user.localId,
+      email: user.email || null,
+      emailVerified: Boolean(user.emailVerified),
+    };
   } catch (error) {
-    if (error.message === "Missing Firebase Admin server credentials.") {
+    if (error instanceof AuthenticationError) {
       throw error;
     }
-    throw new AuthenticationError();
+
+    console.error("[Auth] Firebase token lookup failed:", error);
+    const serviceError = new Error("Authentication service temporarily unavailable.");
+    serviceError.status = 503;
+    throw serviceError;
   }
 };
 

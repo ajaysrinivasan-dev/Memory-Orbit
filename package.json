@@ -16,7 +16,6 @@
     "autoprefixer": "^10.4.19",
     "dotenv": "^16.4.5",
     "firebase": "^12.7.0",
-    "firebase-admin": "^14.5.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.555.0",
     "postcss": "^8.4.38",
@@ -28,9 +27,6 @@
     "typewriter-effect": "^2.22.0",
     "use-sound": "^5.0.0",
     "vercel": "^35.2.1"
-  },
-  "overrides": {
-    "jose": "4.15.9"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.4",
