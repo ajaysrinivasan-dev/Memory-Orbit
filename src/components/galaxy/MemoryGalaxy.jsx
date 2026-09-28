@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { db, auth } from '../../firebase';
 import Journal from '../../Journal.jsx';
 import TheVoid from '../../TheVoid.jsx';
-import { signOut } from 'firebase/auth';
+import { signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { Scan, Database, Activity, FileText, X, User as UserIcon, LogOut, ShieldCheck } from 'lucide-react';
 
@@ -34,6 +34,61 @@ const PanelLoader = () => (
 // --- COMPONENT: CAPTAIN'S IDENTITY BADGE ---
 const UserBadge = ({ user }) => {
     const [expanded, setExpanded] = useState(false);
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [passwordMessage, setPasswordMessage] = useState(null);
+    const [passwordError, setPasswordError] = useState(null);
+    const [passwordBusy, setPasswordBusy] = useState(false);
+
+    const handleChangePassword = async (event) => {
+        event.preventDefault();
+        setPasswordError(null);
+        setPasswordMessage(null);
+
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            setPasswordError('Complete all password fields.');
+            return;
+        }
+        if (newPassword.length < 6) {
+            setPasswordError('New password must be at least 6 characters.');
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            setPasswordError('New passwords do not match.');
+            return;
+        }
+
+        setPasswordBusy(true);
+        try {
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+            setPasswordMessage('Password changed successfully.');
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+        } catch (error) {
+            const messages = {
+                'auth/invalid-credential': 'Current password is incorrect.',
+                'auth/weak-password': 'New password must be at least 6 characters.',
+                'auth/too-many-requests': 'Too many attempts. Please try again later.',
+            };
+            setPasswordError(messages[error.code] || 'Unable to change password. Please try again.');
+        } finally {
+            setPasswordBusy(false);
+        }
+    };
+
+    const resetPasswordSection = () => {
+        setShowChangePassword(false);
+        setPasswordError(null);
+        setPasswordMessage(null);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+    };
 
     return (
       <motion.div className="absolute top-6 right-6 z-50 flex flex-col items-end" initial={false} animate={expanded ? "open" : "closed"}>
@@ -86,6 +141,81 @@ const UserBadge = ({ user }) => {
                           </div>
                           <p className="text-[10px] text-gray-500 font-tech truncate">{user.email}</p>
                       </div>
+                      {user.providerData.some((provider) => provider.providerId === 'password') && (
+                          <div className="border-b border-white/5">
+                              <button
+                                  type="button"
+                                  onClick={() => {
+                                      setShowChangePassword(!showChangePassword);
+                                      setPasswordError(null);
+                                      setPasswordMessage(null);
+                                  }}
+                                  className="w-full flex items-center gap-3 p-4 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-colors text-xs font-bold uppercase tracking-wider"
+                              >
+                                  <ShieldCheck size={16} />
+                                  {showChangePassword ? 'Close Password Section' : 'Change Password'}
+                              </button>
+
+                              {showChangePassword && (
+                                  <form onSubmit={handleChangePassword} className="px-4 pb-4 space-y-3">
+                                      <input
+                                          type="password"
+                                          value={currentPassword}
+                                          onChange={(event) => setCurrentPassword(event.target.value)}
+                                          placeholder="Current password"
+                                          autoComplete="current-password"
+                                          className="w-full px-3 py-2 bg-gray-900/70 border border-blue-500/20 rounded-lg text-xs text-blue-100 placeholder-gray-600 focus:outline-none focus:border-blue-400"
+                                          required
+                                      />
+                                      <input
+                                          type="password"
+                                          value={newPassword}
+                                          onChange={(event) => setNewPassword(event.target.value)}
+                                          placeholder="New password"
+                                          autoComplete="new-password"
+                                          className="w-full px-3 py-2 bg-gray-900/70 border border-blue-500/20 rounded-lg text-xs text-blue-100 placeholder-gray-600 focus:outline-none focus:border-blue-400"
+                                          required
+                                          minLength={6}
+                                      />
+                                      <input
+                                          type="password"
+                                          value={confirmNewPassword}
+                                          onChange={(event) => setConfirmNewPassword(event.target.value)}
+                                          placeholder="Confirm new password"
+                                          autoComplete="new-password"
+                                          className="w-full px-3 py-2 bg-gray-900/70 border border-blue-500/20 rounded-lg text-xs text-blue-100 placeholder-gray-600 focus:outline-none focus:border-blue-400"
+                                          required
+                                          minLength={6}
+                                      />
+
+                                      {passwordError && (
+                                          <p className="text-[10px] text-red-300">{passwordError}</p>
+                                      )}
+                                      {passwordMessage && (
+                                          <p className="text-[10px] text-emerald-300">{passwordMessage}</p>
+                                      )}
+
+                                      <div className="flex gap-2">
+                                          <button
+                                              type="submit"
+                                              disabled={passwordBusy}
+                                              className="flex-1 rounded-lg border border-blue-500/40 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-blue-300 hover:bg-blue-500/10 disabled:opacity-50"
+                                          >
+                                              {passwordBusy ? 'Updating...' : 'Update Password'}
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={resetPasswordSection}
+                                              disabled={passwordBusy}
+                                              className="rounded-lg border border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-gray-200 disabled:opacity-50"
+                                          >
+                                              Cancel
+                                          </button>
+                                      </div>
+                                  </form>
+                              )}
+                          </div>
+                      )}
                       <button
                           onClick={() => signOut(auth)}
                           className="w-full flex items-center gap-3 p-4 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-xs font-bold uppercase tracking-wider"
